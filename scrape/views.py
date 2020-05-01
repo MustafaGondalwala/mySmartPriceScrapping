@@ -42,7 +42,7 @@ def store_product(link):
 		rating = soup.find("span",attrs={"itemprop":"ratingValue"}).text
 	except:
 		rating = 0
-	# ProductDescription(link=search,store=json.dumps(store),all_images=json.dumps(all_images),bullets=json.dumps(bullets),description=str(description),title=title,rating=rating).save()
+	ProductDescription(link=search,store=json.dumps(store),all_images=json.dumps(all_images),bullets=json.dumps(bullets),description=str(description),title=title,rating=rating).save()
 
 
 def specific_product(request):
@@ -165,16 +165,19 @@ def get_product(request):
 	price_container = soup.findAll("div",attrs={"class":"prc-tbl__btn"})
 	store = []
 	for i in price_container:
-		temp = i.a['href']
-		store_name = temp.split("store=")[1].split(">")[0]
-		price = temp.split("sprice=")[1].split("&")[0]
-		store.append({"store_name":store_name,"price":price})
+		try:
+			temp = i.a['href']
+			store_name = temp.split("store=")[1].split(">")[0]
+			price = temp.split("sprice=")[1].split("&")[0]
+			store.append({"store_name":store_name,"price":price})
+		except:
+			pass
 	bullets_container = soup.findAll("li",attrs={"class":"prdct-dtl__spfctn"})
 	bullets = []
 	for i in bullets_container:
 	  bullets.append(i.text)
 	try:
-		description = soup.find("div",attrs={"data-id":"product-details"})
+		description = soup.find("div",attrs={"class":"main-wrpr__cols3"})
 	except:
 		description = ""
 	try:
