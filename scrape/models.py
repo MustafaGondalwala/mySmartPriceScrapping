@@ -11,6 +11,7 @@ class Product(models.Model):
 	link = models.CharField(max_length=255,unique=True)
 	rating = models.CharField(max_length=50)
 	price = models.CharField(max_length=50)
+	page = models.IntegerField();
 	created_at = models.DateField(default=timezone.now)
 
 

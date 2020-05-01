@@ -8,4 +8,5 @@ urlpatterns = [
     path('product-listing',views.product_search,name="product_search"),
     path('get-product',views.get_product,name="get_product"),
     path('get-links',views.get_links,name="get_links"),
+    path('specific-product',views.specific_product,name="specific_product"),
 ]

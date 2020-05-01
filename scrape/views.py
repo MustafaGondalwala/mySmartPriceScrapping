@@ -8,12 +8,69 @@ import datetime
 
 
 	
+def store_product(link):
+	try:
+		req = requests.get(search)
+	except:
+		return JsonResponse({"error":"Error Occured"},safe=False)
+	soup = BeautifulSoup(req.text)
+	all_images_container = soup.findAll("img",attrs={"class":"prdct-dtl__thmbnl-img"})
+	all_images = []
+	for i in all_images_container:
+	  all_images.append({'image':i['data-image']})
+	price_container = soup.findAll("div",attrs={"class":"prc-tbl__btn"})
+	store = []
+	for i in price_container:
+		temp = i.a['href']
+		store_name = temp.split("store=")[1].split(">")[0]
+		price = temp.split("sprice=")[1].split("&")[0]
+		store.append({"store_name":store_name,"price":price})
+	bullets_container = soup.findAll("li",attrs={"class":"prdct-dtl__spfctn"})
+	bullets = []
+	for i in bullets_container:
+	  bullets.append(i.text)
+
+	try:
+		description = soup.find("div",attrs={"class":"main-wrpr__cols3"})
+	except:
+		description = ""
+	try:
+		title = soup.find("h1",attrs={"class":"prdct-dtl__ttl"}).text
+	except:
+		title = ""
+	try:
+		rating = soup.find("span",attrs={"itemprop":"ratingValue"}).text
+	except:
+		rating = 0
+	# ProductDescription(link=search,store=json.dumps(store),all_images=json.dumps(all_images),bullets=json.dumps(bullets),description=str(description),title=title,rating=rating).save()
 
 
+def specific_product(request):
+	keyword = request.GET['keyword']
+	main = []
+	check_in_db = Product.objects.filter(keyword = keyword)[:10]
+	if(check_in_db):
+		for i in check_in_db:
+			main.append({
+					"image":i.image,
+			        "title":i.title,
+			        "link":i.link,
+			        "rating":i.rating,
+			        "price":i.price,
+			        "id":i.id
+				})
+		return JsonResponse(main,safe=False);
+	else:
+		return JsonResponse([],safe=False);
+	pass
 def product_search(request):
 	search = request.GET['search']
+	try:
+		page = request.GET['page']
+	except:
+		page = 1
 	main = []
-	check_in_db = Product.objects.filter(keyword = search)
+	check_in_db = Product.objects.filter(keyword = search,page=page)
 	print(check_in_db)
 	if(check_in_db):
 		for i in check_in_db:
@@ -27,7 +84,7 @@ def product_search(request):
 				})
 		return JsonResponse(main,safe=False);
 
-	req = requests.get("https://www.mysmartprice.com/msp/search/msp_search_new.php?subcategory=undefined&s="+search)
+	req = requests.get("https://www.mysmartprice.com/msp/search/msp_search_new.php?subcategory=undefined&s="+search+"&page="+str(page))
 	soup = BeautifulSoup(req.text);
 	for i in soup.findAll("div",attrs={"class":"prdct-item"}):
 	    image = i.find("img")['data-lazy-src']
@@ -43,10 +100,12 @@ def product_search(request):
 	        "title":title,
 	        "link":link,
 	        "rating":rating,
-	        "price":price
+	        "price":price,
 	    })
-	    Product(keyword=search,image=image,title=title,link=link,rating=rating,price=price).save()
-
+	    try:
+	    	Product(keyword=search,image=image,title=title,link=link,rating=rating,price=price,page=page).save()
+	    except:
+	    	pass
 	return JsonResponse(main,safe=False);
 
 
